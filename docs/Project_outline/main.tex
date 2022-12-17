@@ -52,7 +52,8 @@
 
 \title{ % Make subtitle lines with \\
     NPC Racer \\
-    \large A Comparative Analysis of Game Agent Pathfinding Algorithms \\
+    \large A Performance Analysis of Game Agent Pathfinding 
+    Algorithms \\
     CAS 701 - Foundations of Modern Scientific Programming - \\
     Final Project}
 \date{\today{}} %Wednesday, April 14, 2021
@@ -84,7 +85,7 @@ Decision trees are composed of decision nodes and leaf nodes. Decision nodes con
     \label{fig:decisiontree}
 \end{figure}
 
-\subsection{DSL Integration & Features}
+\subsection{DSL Integration and Features}
 Agents don’t live on their own and interact based on the state of the world. As such, the model will also have to include other game-world elements. To keep it simple I decided to start with a simple location structure, which contains an agent and other adjacent locations. A player can be incorporated by simply giving an agent a "layerinput method and a specific player controller tree. For abstraction purposes, all these game elements often incorporate into a larger game engine. One of the most popular options is the Unity game engine \cite{technologies_unity_nodate}. However, code integration into an actual game is outside the scope of this project so I’ll be starting with generating code into a programming language I’m very familiar with such as Python.
 
 With the limited scope, some of the minimum features the DSL would include:
@@ -124,25 +125,7 @@ To make this diagram I had to make several assumptions about the game environmen
 
 
 
-\section{Editor Concrete Syntax}
-\subsection{The Editor}
-The two technologies presented in CAS 703 were the graphical concrete syntax of GMF, written in Eugenia, and the textual concrete syntax of Xtext. I initially believed a textual syntax might be best for specifying specific parts of the model. However, based on readability and the intended user base I decided to go with a graphical syntax. That editor can be seen in figure \ref{fig:editor}.
 
-
-\begin{figure}[h]  % h for here, p for separate page, b\t, or !
-    \centering  % centers the figure in the page
-    \includegraphics[width = 13 cm ]{Final Editor.png}
-    \caption{The GMF-based Eugenia editor for agentgame metamodel.}
-    \label{fig:editor}
-\end{figure}
-
-\subsection{Design Decisions & Strengths}
-Seeing that a big proportion of the agent behaviour specification would be tree-based it makes sense to draw trees as diagrams, which is almost always done in computer science for visualization. As well, the intended userbase for the editor would be game designers that wouldn’t necessarily be that adept at textual syntaxes. Providing an easy-to-understand graphical interface would be much more intuitive for the users. Finally, laying out game objects such as locations, agents, and items also makes sense the most sense graphically. Game editors such as Unity use a 3D view for showing what the player will see and a text editor for scripting \cite{technologies_unity_nodate}.
-
-The shapes of the symbols are important too. I wanted to do ovals for the leaf nodes as flowchart processes are usually ovals or circles. This semantic transparency also applies to the sequencing of the tree with arrows going downward. Adjacent locations have bidirectional arrows, decision trees have a line to the agent, and agents are placed in locations are examples of how the concrete syntax makes the editor intuitive to use. As such, I had to structure my metamodel accordingly so it could work with Eugenia. I wanted an arrow to denote a containment relationship between nodes but neither Eugenia phantom nodes nor affix nodes would work without disappearing. As such, I had to change the abstract syntax to associations.
-
-\subsection{Weaknesses & fixes}
-One of the biggest drawbacks of a graphical editor is visual complexity explosion. As the models get bigger and more complex than the one shown in figure \ref{fig:editor} it begins to get hard to read. The number of arrows, layout between the objects, and scrolling through a huge model would make it unusable. This lack of diagrams scaling well is a problem for a game agent designer where the behaviour trees can be very complex. As discussed in class one of the best ways to deal with this problem is modularity/chunking. Making views with only 7 +/- 2 things on them at a time may seem difficult but having specific scenes you jump between is common in game design. Having the editor be able to group and jump to different scenes with links across them would be helpful. Another method is to use hierarchy, such as making collapsing trees into a single node. If the editor could group and collapse tree diagrams it would be very helpful. It can already do this with compartments so maybe having the controller be a compartment would help with the readability of these diagrams as they get more complex.
 
 
 \section{EVL Constraints}
@@ -173,25 +156,20 @@ The implementation of these constraints into the GMF editor was a bit more compl
 \end{figure}
 
 \newpage
-\section{M2T Python Code Generation}
-So to create a set of game objects to be used in a game the transformation will have to be a model-to-text (M2T) transformation. Using Epsilon this can be done by using the template-based Epsilon Generation Language (EGL) with the rule-based EGX coordination language.
-
-\subsection{Design Choices}
-There were several key design choices I decided to make with this transformation. I decided to not integrate the transformation because I couldn’t find any documentation on integrating EGX with a GMF editor. I’m sure there is a way to do it with a plugin but I felt it would be much more convenient to work through the main Eclipse editor. Model management operations such as generating code may be more of a programmer domain than a game designer domain anyways. However, this means there’s no guarantee that the model is validated before it’s transformed which is a systematic flaw. To overcome this I had to add redundancies in the transformation code. I also decided to link the editor agentgame XMI file (external to the repository) to run the transformations. This means it’s running directly against the editor XMI file so any saved changes to the model will be updated in our transformations, i.e. no copying files or relaunching editors. To make it easier to reference I’ve decided to include a static model ($example_editor_diagram.agentgame$) in the project files which I will be working from as my generated example
-
-The code generation choice to use Python was due to familiarity. Although integrating into a game engine like Unity with C# scripts would be the end goal it’s outside the scope of the project. I started by writing code in Python that I could use as a template for my EGL template. The EGX file runs each game element, i.e. the entire model, once to generate the static Python classes and object elements in a separate file. This is to cleanly separate the class code from the initialized variables.
-
-\subsection{Challenges}
-The first challenge I encounter is Python identifiers. The model name attribute wouldn’t do because anything can be typed as a name but Python variables can only be composed of underscores, characters, and numbers. I decided to follow the XMI scheme and name the variable by order of appearance in the list. I deemed this much easier to deal with than doing EOL string manipulation and testing for edge cases.
-
-\subsubsection{Hand Written Code Integration}
-One of the biggest challenges I wrestled with was how to design generated code that integrated nicely with hand-written code. In class, we covered 4 distinct methods with the simplest being protected regions or tool-integration, i.e. code imports. I went with tool integration so that the generated code and hand-written code were cleanly separated and programmers didn’t need to search through a giant generated file. The main issue was then how to structure my classes to integrate nicely between the two stages of code. Ideally, code that’s generated could be overwritten with hand-written attributes and methods. How to initialize these classes so they could reference each other and then be extended is a problem I’ve wrestled with before and didn’t know how to easily solve. To add on top of this the hand-written information to write for decision and leaf nodes would be dynamic logic instead of static references.
-
-To overcome this extensibility challenge I decided to take advantage of higher-order functions in Python. This means I could generate an abstract class with methods that accepted functions as input. Then I could write the actual methods by hand and pass them into the objects. I did this by creating a class that copies the attributes of the abstract object into a finished class. Then to invoke the higher-order function on your data you initialize the finished class and pass logic functions.
-An example is shown in appendix \ref{appendix:pythoncode} using DecisionNodes and the gotochild function.
 
 
-This method is very tedious in rewriting code so it's a very DRY (don't repeat yourself) solution\cite{noauthor_dont_2021}. Having to re-write the entire class doesn't make much sense but it does cleanly separate the code. In retrospect, I would rather have just generated code and use protected sections to write the behavioural logic. This would lead to much less repeated code. I'm also sure there's a much more DRY method in Python to overwrite initialized abstract functions. That solution would be the best of both worlds.
+\section{Implementation}
+Implementation
+
+
+1. Functional requirements, code requirements, and timeline ask for extensions. 
+2. Modules: 
+• char to bitmap parser
+Going to have to make a character scanner parser to take in a 2D input
+• AI prototype and derived pathfinding classes
+• Maze class based or derived on Matrix but with bitmap or char type
+• Timer/statistics module/helper static class for timing things.
+
 
 
 
