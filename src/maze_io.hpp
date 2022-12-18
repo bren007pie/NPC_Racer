@@ -76,5 +76,5 @@ void NPC_Racer::make_empty_maze_file(const size_t &rows, const size_t &columns, 
         output << "\n"; // Always need the newline character
     }
     output.close(); // Don't forget to close
-    std::cout << "Empty matrix file `" << file_name << "` was successfully created.\n ";
+    std::cout << "Empty maze file `" << file_name << "` was successfully created.\n ";
 }

@@ -20,6 +20,33 @@ This document is for developers. It acts as not only a documentation of my desig
 
 Design philosophy for this project is going to be consistency over performance. The goal is to make sure each program is compared fairly so must use the same C++ technologies to get a comparable result. 
 
+### Mazes
+Mazes offer a great testing point, especially for games, because they are densely populated, have many branching paths, and are easy to generate. Perfect mazes are one that have only one solution. Our mazes don't need to be perfect but there should be a shortest or at least equally short path.
+
+Our maze structure will be made up of Ascii/UTF-8 characters with `.` denoting a free space, `@` denoting the starting location of the agent, and `X` or `x` denoting the destination of the agent. Any other symbol, besides a comma, will be treated as a wall or barrier. Therefore a valid path would travel along `.` from the `@` symbol to the `X` symbol.
+
+
+#### Maze Generation
+
+Mazes are well defined and there are many algorithms to [generate mazes](https://stackoverflow.com/questions/38502/whats-a-good-algorithm-to-generate-a-maze). 
+
+We could make it so mazes generate on the fly but that is out of the scope of this work so for now we'll rely on other tools and generate a fixed set of mazes.
+
+Many people have made maze generators:
+- https://thenerdshow.com/maze.html
+- https://gist.github.com/gmalmquist/2782000bd6b378831858
+- https://users.csc.calpoly.edu/~zwood/teaching/csc471/finalproj010s1/ritam/
+- https://www.vidarholen.net/cgi-bin/labyrinth?w=50&h=50
+
+But for our purposes we want it to be only ascii character with space or a . as the empty space. There are two I found:
+1. https://www.delorie.com/game-room/mazes/genmaze.cgi
+2. https://www.dcode.fr/maze-generator
+
+
+The first only generates a 50 x 50 maze (101 x 101 matrix) while the second generates a 100 x 100 maze (301 x 301 matrix). Using these in our CSV format with Excel we could easily import these mazes to be solved.
+- Split in Excel using fixed width text to column (use wizard if small, if large use formulas), could automate again using Python or C++ but we're doing this just to get a couple mazes quickly
+
+
 ### Testing
 
 We will be writing incremental and testing as we go. Ideally we do formal unit tests of each function with a formal system but for now it will all be done by hand.
@@ -86,6 +113,7 @@ Any exceptions for any of the class.
 
 - Optimizing to see how fast we can make it go
 - Allow make_empty_maze_file() to define name of the empty maze (would need to be checked) and location to write to (would need to check if it exists).
+- Have mazes be generated on the fly
 
 ### Hand-in Checklist
 
