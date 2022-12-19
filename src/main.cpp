@@ -14,6 +14,6 @@
 int main() // int argc, char const *argv[]
 {
     std::cout << "Hello NPCs!\n";
-    NPC_Racer::make_empty_maze_file(301, 301, true);
+    NPC_Racer::make_empty_maze_file(100, 100, true);
     return 0;
 }
