@@ -115,9 +115,22 @@ Any exceptions for any of the class.
 
 ### Future Work
 
+- time line, requirements, and testing plan in project proposal
 - Optimizing to see how fast we can make it go
 - Allow make_empty_maze_file() to define name of the empty maze (would need to be checked) and location to write to (would need to check if it exists).
 - Have mazes be generated in the program or at least auto parse other mazes
+- Also could include going up levels, i.e. 3D maze
+-  have ASCII display AI moving along path in a terminal stop-motion or visualized in Python
+- could write in Python to compare
+- Static target vs dynamic (randomly) moving target.
+- Could display using fancier graphics 
+- Testing multiple algorithms and scenarios including: 
+	+ Hierarchical path finding
+	+ D* Alogrithm
+	+ Multi-agent pathfinding
+- Integrate into a text-based adventure to show speedup of agents. 
+- Write docs in Pandoc markdown and then convert to Latex to make fancy PDF/wiki/html
+
 
 ### Hand-in Checklist
 
@@ -149,16 +162,22 @@ For Project
 
 ### Work Checklist
 
+Proposal
+- [X] Copy all written so far into word document
+- [X] Organize and pairdown that information
+- [X] Write theory/background
+- [X] Write main description
+- [X] Make the module interface diagram
+- [X] Write implementation sections
+- [X] Edit pass with grammarly
+- [X] Get citations in Zotero/.bib file auto generation
+- [X] Copy to Latex and input citations
+Mazes
 - [X] Make empty maze generator
-- [ ] Copy all written so far into word document
+- [X] Generate some mazes
+- [ ] Rename MazeIO and put in Mazes class
 - [ ] Make maze parser
 - [ ] 
 
 
-### Work Log
-- unknown hours working on project outline
-- Sunday December 18, 2022 - 2 hr organizing project and making empty maze generator
-
-
-Total Hours: 2 hr
 
