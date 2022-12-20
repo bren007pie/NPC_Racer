@@ -113,6 +113,12 @@ Any exceptions for any of the class.
 
 - I would also suggest syncing your VSCode settings if you use multiple computers to make it easier.
 
+### Git Notes
+- if renamed remote repository can change origin url to moved url with:
+>`git remote set-url origin https://github.com/bren007pie/NPC_Racer.git ` 
+
+[https://docs.github.com/en/get-started/getting-started-with-git/managing-remote-repositories]
+
 ### Future Work
 
 - time line, requirements, and testing plan in project proposal
@@ -177,6 +183,7 @@ Mazes
 - [X] Generate some mazes
 - [ ] Rename MazeIO and put in Mazes class
 - [ ] Make maze parser
+- [ ] Make figure out maze data members/if you can steal from matrix class
 - [ ] 
 
 
