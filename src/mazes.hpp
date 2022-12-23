@@ -1,7 +1,7 @@
 /**
- * @file main.cpp
+ * @file mazes.hpp
  * @author Brendan Fallon (fallonbr@mcmaster.ca) (https://github.com/bren007pie)
- * @brief This module reads mazes from text files and writes them
+ * @brief This module contains the maze class and writes empty maze files.
  * @version 0.1
  * @date Sunday December 18, 2022
  * @copyright Copyright (c) 2022 Brendan Fallon
@@ -18,6 +18,9 @@
 
 namespace NPC_Racer // using namespace across multiple files: https://stackoverflow.com/questions/4093407/c-namespaces-and-defining-classes-in-separate-files
 {
+    //// --------- ////
+    //// Functions ////
+    //// --------- ////
     /**
      * @brief Writes an empty maze with `.` for every element to a text file.
      *
@@ -29,6 +32,61 @@ namespace NPC_Racer // using namespace across multiple files: https://stackoverf
      * @warning Overwrites any previous file with the same name. Advise @b renaming each file.
      */
     void make_empty_maze_file(const size_t &rows, const size_t &columns, const bool comma_separated = false);
+
+    //// ---------- ////
+    //// Maze Class ////
+    //// ---------- ////
+    /**
+     * @brief Encapsulation for maze data.
+     *
+     * @result Maze object that contains data read from a file.
+     * @cite Inspired by maze class from https://baraksh.com/CSE701/notes.php
+     */
+    class maze
+    {
+    public:
+        //// Constructors ////
+        /**
+         * @brief Construct a maze object from a maze file.
+         *
+         * @param filename The maze file name of the `*.txt` or `*.csv` file.
+         * @result Loads the contents of the maze file into the object.
+         */
+        maze(const std::string filename);
+        //// Member Functions ////
+
+        //// Class Operators ////
+
+        //// Exceptions ////
+
+    private:
+        //// Data Members ////
+
+        // The number of rows.
+        /**
+         * @param rows The number of rows of the rectangular maze.
+         */
+        size_t rows = 0;
+
+        /**
+         * @param columns The number of columns of the rectangular maze.
+         */
+        size_t columns = 0;
+
+        /**
+         * @param bit_maze A vector storing the bitmap elements of the maze in flattened (1-dimensional) form. True is a barrier, false is a free space.
+         */
+        vector<bool> bit_maze;
+
+        /**
+         * @param bit_maze A vector storing the char elements of the maze in flattened (1-dimensional) form. Used for printing
+         */
+        vector<char> char_maze;
+
+        // an iterator pointing to the source position in the maze.
+
+        // an iterator pointing to the destination position in the maze.
+    }
 }
 
 ////// ============== //////
@@ -77,4 +135,14 @@ void NPC_Racer::make_empty_maze_file(const size_t &rows, const size_t &columns, 
     }
     output.close(); // Don't forget to close
     std::cout << "Empty maze file `" << file_name << "` was successfully created.\n ";
+}
+
+//// ---------- ////
+//// Maze Class ////
+//// ---------- ////
+
+//// Constructors ////
+
+NPC_Racer::maze::maze(const std::string filename)
+{
 }

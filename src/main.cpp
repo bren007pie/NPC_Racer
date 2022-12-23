@@ -9,7 +9,7 @@
 
 //// Preprocessor Directives ////
 #include <iostream>
-#include "maze_io.hpp"
+#include "mazes.hpp"
 
 int main() // int argc, char const *argv[]
 {

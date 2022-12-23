@@ -50,6 +50,12 @@ The first only generates a 50 x 50 maze (101 x 101 matrix) while the second gene
 - Excel uses text parser with string to column convert with `=MID($A2,B$1,1)` converter to select a character.
 - If empty spaces are the path use find and replace to replace empty space ` ` with `.`. 
 
+#### Maze class
+- for now maze class will read from a file, future work you can make empty maze constructor and add elements to it.
+- Much like the matrix file we'll be using flattened 2D arrays but with with only need for bool version of the bitmap and char version.
+- All the operations will happen on the bitmap version for speed but for any printouts the char map will be used. 
+- We'll use iterators to point to the starting and ending destination.
+- May be helpful to compute adjacency map that states which directions we can go for movement in some encoding (e.g. at each location store a string comprised of `L`, `R`, `U`, `D` denoting which way you can move.
 
 ### Testing
 
@@ -118,6 +124,8 @@ Any exceptions for any of the class.
 - Optimizing to see how fast we can make it go
 - Allow make_empty_maze_file() to define name of the empty maze (would need to be checked) and location to write to (would need to check if it exists).
 - Have mazes be generated in the program or at least auto parse other mazes
+- Constructors and setters where you can make empty maze with a constructor and add elements to it through object setters. 
+- Have maze store the char map
 
 ### Hand-in Checklist
 
