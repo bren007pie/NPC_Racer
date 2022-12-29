@@ -58,7 +58,9 @@
         "unordered_set": "cpp",
         "ratio": "cpp",
         "fstream": "cpp",
-        "sstream": "cpp"
+        "sstream": "cpp",
+        "cerrno": "cpp",
+        "climits": "cpp"
     },
     "C_Cpp.errorSquiggles": "Disabled",
     "cSpell.words": [
