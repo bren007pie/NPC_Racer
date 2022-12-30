@@ -7,7 +7,7 @@
             "args": [
                 // first arg is the CWD to run  g++
                 // "${workspaceFolder}\\*.cpp",  // builds all files in workspace which can take a long time to build (can only be one main function in all these files)
-                "${workspaceFolder}\\src\\*.cpp", // builds all files in certain folder, takes less time to build (can only be one main function in all these files)
+                "${workspaceFolder}\\*.cpp", // builds all files in certain folder, takes less time to build (can only be one main function in all these files)
                 //"${workspaceFolder}\\Ch4\\cpp_features.cpp", // builds a single file, least time to build and no main conflicts but tedious
                 "-o", // for compiling files
                 //"${fileDirname}\\${fileBasenameNoExtension}.exe", // the name of the output file, named off of current open file in editor

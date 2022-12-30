@@ -12,6 +12,7 @@
 #include <fstream>  // std::ofstream, std::ifstream
 #include <string>   // std::string, std::to_string, std::stoull
 #include <vector>   // std::vector
+#include <array>    // std::array
 
 ////// ========= //////
 ////// Interface //////
@@ -177,6 +178,11 @@ namespace NPC_Racer // using namespace across multiple files: https://stackoverf
 
         //// Data Members ////
 
+        /**
+         * @param file_name The file name of the maze with the extension.
+         */
+        std::string file_name;
+
         // The number of rows.
         /**
          * @param row_size The number of rows of the rectangular maze.
@@ -189,15 +195,15 @@ namespace NPC_Racer // using namespace across multiple files: https://stackoverf
         size_t column_size = 0;
 
         /**
-         * @param bit_maze An intermediate bitmap representation of the maze in flattened (1-dimensional) form. True is a free space, false is a barrier.
-         * @note This intermediate representation is not intended for user access.
-         */
-        std::vector<bool> bit_maze;
-
-        /**
          * @param character_maze A vector storing the char elements of the maze in flattened (1-dimensional) form. Used for printing.
          */
         std::vector<char> character_maze;
+
+        /**
+         * @param bit_maze An intermediate bitmap representation of the maze in flattened (1-dimensional) form. True is a free space, false is a barrier.
+         * @note This essentially acts as the stored nodes of the path graph. Also, this intermediate representation is not intended for user access.
+         */
+        std::vector<bool> bit_maze;
 
         /**
          * @param start_position index of the start position in the flattened maze vector.
@@ -212,9 +218,10 @@ namespace NPC_Racer // using namespace across multiple files: https://stackoverf
         uint64_t destination_position;
 
         /**
-         * @param file_name The file name of the maze with the extension.
+         * @param connected_paths An intermediate representation for the connected paths of each free space in the maze in flattened (1-dimensional) form. In each index of the inner array signifies one of the four movement directions. array[0] is up, array[1] is down, array[2] is left, and array[3] is right. At the movement direction we either store the index of the free space in that direction if it's connected. If not we store -1 to designate there is no connected path in that direction.
+         * @note This acts as the stored edges of the path graph. Also, this intermediate representation is not intended for user access.
          */
-        std::string file_name;
+        std::vector<std::array<int64_t, 4>> connected_paths;
     };
 
     //// External Overloaded Operators ////
@@ -336,8 +343,29 @@ NPC_Racer::maze::maze(const std::string filename)
     // separated into private function to parse the maze because it's very long
     parse_maze_file(trimmed_filename, comma_separated);
 
-    // separated into another private file because long
-    // create graph
+    // creating the graph from the bit_maze //
+    size_t flattened_maze_size = row_size * column_size;
+
+    const std::array<int64_t, 4> empty_connected_paths = {-1, -1, -1, -1}; // default is all paths are not connected to anything.
+
+    connected_paths.resize(flattened_maze_size, empty_connected_paths); // an initialized graph filled with all empty path connections.
+
+    // looping through the bit_maze and filling in indicies if it works
+    for (size_t i = 0; i < flattened_maze_size; i++)
+    {
+        // index conversion, future work could make a private is_free function that avoids doing index arithmetic
+        int64_t row_index = (int64_t)i / (int64_t)column_size; // rounds down to nearest int?
+        int64_t column_index = (int64_t)i - (row_index * (int64_t)column_size);
+        // populating each direction in the array
+        if (is_free(row_index - 1, column_index, false))        // if up path is free
+            connected_paths[i][0] = (int64_t)(i - column_size); // storing the up index
+        if (is_free(row_index + 1, column_index, false))        // if down path is free
+            connected_paths[i][1] = (int64_t)(i + column_size); // storing the down index
+        if (is_free(row_index, column_index - 1, false))        // if left path is free
+            connected_paths[i][2] = (int64_t)(i - 1);           // storing the left index
+        if (is_free(row_index, column_index + 1, false))        // if right path is free
+            connected_paths[i][3] = (int64_t)(i + 1);           // storing the right index
+    }
 }
 
 //// Public Member Functions ////
@@ -360,10 +388,10 @@ std::string NPC_Racer::maze::stringify() const
 
 void NPC_Racer::maze::print_maze() const { std::cout << this; }
 
-bool NPC_Racer::maze::is_free(const int64_t row, const int64_t column, const bool out_of_bounds_warning = true) const
+bool NPC_Racer::maze::is_free(const int64_t row, const int64_t column, const bool out_of_bounds_warning) const
 {
     // bound checking guard, ints are signed so can be negative or bigger than maze size
-    if ((row < 0) or (row > (row_size - 1)) or (column < 0) or (column > (column_size - 1)))
+    if ((row < 0) or (row > ((int64_t)row_size - 1)) or (column < 0) or (column > ((int64_t)column_size - 1))) // need to cast unsigned ints
     {
         if (out_of_bounds_warning) // if out_of_bounds_warning enabled
         {
@@ -379,8 +407,9 @@ bool NPC_Racer::maze::is_free(const int64_t row, const int64_t column, const boo
             return false; // intentionally has option to silently return false for later algorithms
     }
 
-    uint64_t index = row * column_size + column;
-    return bit_maze[index];
+    // getting index, it's okay to cast between signed types because all values are positive
+    int64_t index = row * (int64_t)column_size + column;
+    return bit_maze[(size_t)index];
 }
 
 //// Private Member Functions ////
@@ -440,8 +469,8 @@ void NPC_Racer::maze::parse_maze_file(const std::string trimmed_filename, const 
     bit_maze.reserve(row_size * column_size);
     character_maze.reserve(row_size * column_size);
 
-    bit_maze.resize(row_size * column_size, false);
-    character_maze.resize(row_size * column_size, '0');
+    bit_maze.resize(row_size * column_size, false);     // initializing maze to false
+    character_maze.resize(row_size * column_size, '0'); // initializing to all 0s
 
     // Going through rest of fixed-width character maze //
 
