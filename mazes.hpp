@@ -8,10 +8,10 @@
  */
 
 //// Preprocessor Directives ////
-#include <iostream> // terminal output
-#include <fstream>  // file output
-#include <string>   // string manipulation
-#include <vector>   // vectors
+#include <iostream> // std::cout, std::ostream
+#include <fstream>  // std::ofstream, std::ifstream
+#include <string>   // std::string, std::to_string, std::stoull
+#include <vector>   // std::vector
 
 ////// ========= //////
 ////// Interface //////
@@ -69,16 +69,111 @@ namespace NPC_Racer // using namespace across multiple files: https://stackoverf
          * @brief Prints characters of the maze to the terminal.
          *
          * @result Prints characters of the maze to the terminal.
-         * @warning This print out is just for display purposes, cannot be copied into a maze file.
+         * @warning This print out is just for display purposes, output cannot be copied into a maze file.
          */
         void print_maze() const;
+
+        /**
+         * @brief Says whether the maze element at that position is free or not.
+         *
+         * @param row The row position of the requested element. Indexed from 0 with the origin at the top left of the maze. So from top to bottom goes from 0 to (row size - 1)
+         * @param column The column position of the requested element. Indexed from 0, not counting comma or space separators from maze files, with the origin at the top left of the maze. So from left to right goes from 0 to (column size - 1).
+         * @param out_of_bounds_warning Enable to have a warning printed to console and throw an out_of_bounds exception if the value is out of bounds.
+         *
+         * @return Boolean of if the position is free. Free is true, barrier is false.
+         * @note Destination and starting positions count as free.
+         * @warning If out_of_bounds_warning is set to false this will return false when a requested element is out of bounds. This could lead to unexpected behaviour.
+         */
+        bool is_free(const int64_t row, const int64_t column, const bool out_of_bounds_warning = true) const;
 
         //// Internal Overloaded Operators ////
 
         //// Exceptions ////
 
+        /**
+         * @exception Exception to be thrown if the input string given has no input.
+         */
+        class empty_input : public std::invalid_argument
+        {
+        public:
+            empty_input() : std::invalid_argument("Maze file names cannot be empty."){};
+        };
+
+        /**
+         * @exception Exception to be thrown if the input string is not a `.csv` or `.txt`.
+         */
+        class invalid_extension : public std::invalid_argument
+        {
+        public:
+            invalid_extension() : std::invalid_argument("Maze file name extensions must be `.txt` or `.csv`."){};
+        };
+
+        /**
+         * @exception Exception to be thrown if the input string has a character not in "0123456789".
+         */
+        class invalid_digit : public std::invalid_argument
+        {
+        public:
+            invalid_digit() : std::invalid_argument("Maze sizes must be number digits of only '0-9'."){};
+        };
+
+        /**
+         * @exception Exception to be thrown if maze file has two separators in a row i.e. an empty cell.
+         */
+        class empty_cell : public std::invalid_argument
+        {
+        public:
+            empty_cell() : std::invalid_argument("Every column of the maze must be filled."){};
+        };
+
+        /**
+         * @exception Exception to be thrown if maze file has two characters in a row with no separator or two `X` or two `@` in a file.
+         */
+        class double_character : public std::invalid_argument
+        {
+        public:
+            double_character() : std::invalid_argument("All positions must be only one character wide and separated by a comma or whitespace. There can only be one `@` and one `X` in a maze."){};
+        };
+
+        /**
+         * @exception Exception to be thrown if maze file is non-rectangular or not the specified size in the first row header.
+         */
+        class incorrect_maze_size : public std::length_error
+        {
+        public:
+            incorrect_maze_size() : std::length_error("Maze must be the rectangular size specified in the first row."){};
+        };
+
+        /**
+         * @exception Exception to be thrown if maze file no `X` or no `@` in a file.
+         */
+        class invalid_maze : public std::invalid_argument
+        {
+        public:
+            invalid_maze() : std::invalid_argument("There must be one start position '@' and one destination position `X` in a maze."){};
+        };
+
+        /**
+         * @exception Exception to be thrown if trying to access something out of the bounds of the maze.
+         */
+        class out_of_bounds : public std::out_of_range
+        {
+        public:
+            out_of_bounds() : std::out_of_range("Attempting to access an elements out of the bounds of the maze."){};
+        };
+
     private:
-        //// Member Functions ////
+        //// Private Member Functions ////
+        /**
+         * @brief Does the actual parsing and error checking to load the contents of the maze into the data members.
+         *
+         * @param trimmed_filename The sanitized maze file name of the `*.txt` or `*.csv` file.
+         * @param comma_separated If the file is comma separated format (CSV). True if yes, false if no.
+         *
+         * @result Loads the contents of the maze file into the object.
+         * @note Separated this out of constructor for organization as was getting way too long.
+         */
+        void parse_maze_file(const std::string trimmed_filename, const bool comma_separated);
 
         //// Data Members ////
 
@@ -204,7 +299,6 @@ NPC_Racer::maze::maze(const std::string filename)
 {
     // Initial variables //
     bool comma_separated;                         // true if a comma separated value file. False if space separated value file.
-    char input_character;                         // the holder for each individual string to be parsed
     const std::string whitespace = " \n\t\v\r\f"; // whitespace characters
     std::string trimmed_filename;                 // filename with leading and trailing whitespace removed
 
@@ -221,8 +315,8 @@ NPC_Racer::maze::maze(const std::string filename)
     // Checks for if empty invariant once whitespace/- is removed //
     if (trimmed_filename.empty())
     {
-        std::cout << "ERROR: File name given `" << filename << "` is empty.\n";
-        // TODO: throw empty_input() exception;
+        std::cout << "ERROR: File name given `" << filename << "`\nFile names cannot be empty.";
+        throw empty_input();
     }
 
     // checking what the extension of the file name is //
@@ -235,15 +329,69 @@ NPC_Racer::maze::maze(const std::string filename)
         comma_separated = true;
     else
     {
-        std::cout << "ERROR: Invalid extension `" << extension << "` for file name " << filename << "!\n";
-        // TODO: throw exception, invalid_file_type()
+        std::cout << "ERROR: Invalid extension `" << extension << "` for file name " << filename << "!\nExtensions must be `.txt` or `.csv`.";
+        throw invalid_extension();
     }
 
+    // separated into private function to parse the maze because it's very long
+    parse_maze_file(trimmed_filename, comma_separated);
+
+    // separated into another private file because long
+    // create graph
+}
+
+//// Public Member Functions ////
+
+std::string NPC_Racer::maze::stringify() const
+{
+    std::string print_accumulator;
+    // print maze as characters surrounded by spaces with newlines
+    for (size_t i = 0; i < row_size; i++)
+    {
+        for (size_t j = 0; j < column_size; j++)
+        {
+            print_accumulator = print_accumulator + character_maze[i * column_size + j];
+            print_accumulator += " ";
+        }
+        print_accumulator += "\n";
+    }
+    return print_accumulator;
+}
+
+void NPC_Racer::maze::print_maze() const { std::cout << this; }
+
+bool NPC_Racer::maze::is_free(const int64_t row, const int64_t column, const bool out_of_bounds_warning = true) const
+{
+    // bound checking guard, ints are signed so can be negative or bigger than maze size
+    if ((row < 0) or (row > (row_size - 1)) or (column < 0) or (column > (column_size - 1)))
+    {
+        if (out_of_bounds_warning) // if out_of_bounds_warning enabled
+        {
+            std::cout << "ERROR: Attempting to access an element outside the bounds of `"
+                      << file_name << "` at"
+                      << "\n\trow   : " << row << "\n\tcolumn: " << column
+                      << "\nMaze row bounds   : 0 to " << (row_size - 1)
+                      << "\nMaze column bounds: 0 to " << (column_size - 1)
+                      << "\nElements must be withint he maze bounds.\n";
+            throw out_of_bounds();
+        }
+        else
+            return false; // intentionally has option to silently return false for later algorithms
+    }
+
+    uint64_t index = row * column_size + column;
+    return bit_maze[index];
+}
+
+//// Private Member Functions ////
+
+void NPC_Racer::maze::parse_maze_file(const std::string trimmed_filename, const bool comma_separated)
+{
     // Opening the ifstream, from: https://baraksh.com/CSE701/notes.php#io-streams-and-files
     std::ifstream input(trimmed_filename);
     if (!input.is_open())
     {
-        std::cout << "ERROR: Error opening input file `" << filename << "`!\n\tDoes this file exist in the current working directory?\n";
+        std::cout << "ERROR: Error opening input file `" << trimmed_filename << "`!\n\tDoes this file exist in the current working directory?\n";
         exit(EXIT_FAILURE); // because it could be multiple errors not throwing an exception.
     }
 
@@ -256,6 +404,7 @@ NPC_Racer::maze::maze(const std::string filename)
     std::string row_size_accumulator;             // holds row size header string.
     std::string column_size_accumulator;          // holds column size header string.
     char separator = comma_separated ? ',' : ' '; // comma or space separated.
+    char input_character;                         // holder for each input character
     bool separated = false;                       // flag for if delimited.
     bool start_position_read = false;             // flag for start position counting.
     bool destination_position_read = false;       // flag for destination position counting.
@@ -268,10 +417,9 @@ NPC_Racer::maze::maze(const std::string filename)
         {
             std::cout << "ERROR: Invalid character `" << input_character
                       << "` in file `" << file_name
-                      << "` at \n\trow   : " << (row + 1) << "\n\tcolumn: " << (column + 1)
+                      << "` at \n\trow   : " << row << "\n\tcolumn: " << column
                       << "\nMaze sizes must be a numeric digit.\n";
-            // TODO: throw invalid_character(row,column,digit)
-            return;
+            throw invalid_digit();
         }
         else if (std::isdigit(input_character) and !separated) // row size
             row_size_accumulator += input_character;           // append number
@@ -315,19 +463,17 @@ NPC_Racer::maze::maze(const std::string filename)
         else if ((input_character == separator) and separated) // was two separators in a row, empty value.
         {
             std::cout << "ERROR: Empty cell in file `" << file_name << "` at \n\trow   : "
-                      << (row + 1) << "\n\tcolumn: " << (column + 1)
-                      << "\nEvery position must be filled.\n";
-            // TODO: throw empty_cell(row,column)
-            return;
+                      << row << "\n\tcolumn: " << column
+                      << "\nEvery column must be filled.\n";
+            throw empty_cell();
         }
         else if (((input_character != separator) and !separated) and (input_character != '\n')) // not separated, not a newline, double value.
         {
             std::cout << "ERROR: Double character `" << input_character
                       << "` in file `" << file_name
-                      << "` at \n\trow   : " << (row + 1) << "\n\tcolumn: " << (column + 1)
+                      << "` at \n\trow   : " << row << "\n\tcolumn: " << column
                       << "\nAll positions must be only one character wide and separated by a comma or whitespace.\n";
-            // TODO: throw double_character(row,column)
-            return;
+            throw double_character();
         }
 
         // Parsing rest of the characters: space, destination, source, or wall.
@@ -344,12 +490,11 @@ NPC_Racer::maze::maze(const std::string filename)
             if (column != ((column_size * 2) - 1)) // each column should be (column_size * 2 ) wide indexed from 1
             {
                 std::cout << "ERROR: Incorrect maze size in file `" << file_name << "` at"
-                          << "\n\trow   : " << (row + 1) << "\n\tcolumn: " << (column + 1)
-                          << "\nExpected columns: " << (column_size * 2)
-                          << "\nGiven columns: " << (column + 1)
+                          << "\n\trow   : " << row << "\n\tcolumn: " << column
+                          << "\nExpected columns: " << (column_size * 2 - 1)
+                          << "\nGiven columns: " << column
                           << "\nMaze must be the rectangular size specified in the first row.\n";
-                // TODO: throw incorrect_maze_size(row,column)
-                return;
+                throw incorrect_maze_size();
             }
 
             row++;            // increment row and reset column
@@ -359,12 +504,11 @@ NPC_Racer::maze::maze(const std::string filename)
             if (row > (row_size + 1)) // check if too many rows before going on. Should be (row_size + 2) wide indexed from 1
             {
                 std::cout << "ERROR: Incorrect maze size in file `" << file_name << "` at"
-                          << "\n\trow   : " << (row + 1) << "\n\tcolumn: " << (column + 1)
-                          << "\nExpected rows: " << (row_size + 2)
-                          << "\nGiven rows: " << (row + 1)
+                          << "\n\trow   : " << row << "\n\tcolumn: " << column
+                          << "\nExpected rows: " << (row_size + 1)
+                          << "\nGiven rows: " << row
                           << "\nMaze must be the rectangular size specified in the first row.\n";
-                // TODO: throw incorrect_maze_size(row,column)
-                return;
+                throw incorrect_maze_size();
             }
             continue; // if newline don't want it to increment column so skips rest of parsing
         }
@@ -379,10 +523,9 @@ NPC_Racer::maze::maze(const std::string filename)
             {
                 std::cout << "ERROR: Duplicate character `" << input_character
                           << "` in file `" << file_name
-                          << "` at \n\trow   : " << (row + 1) << "\n\tcolumn: " << (column + 1)
+                          << "` at \n\trow   : " << row << "\n\tcolumn: " << column
                           << "\nThere can only be one start position `@` in a maze.\n";
-                // TODO: throw double_character(row,column)
-                return;
+                throw double_character();
             }
             // storing free space in bit and character map in right place
             // because we are error checking can use [] over .at() for speed
@@ -400,10 +543,9 @@ NPC_Racer::maze::maze(const std::string filename)
             {
                 std::cout << "ERROR: Duplicate character `" << input_character
                           << "` in file `" << file_name
-                          << "` at \n\trow   : " << (row + 1) << "\n\tcolumn: " << (column + 1)
+                          << "` at \n\trow   : " << row << "\n\tcolumn: " << column
                           << "\nThere can only be one destination position `X` in a maze.\n";
-                // TODO: throw double_character(row,column)
-                return;
+                throw double_character();
             }
 
             // comments same as start position
@@ -426,54 +568,28 @@ NPC_Racer::maze::maze(const std::string filename)
     {
         std::cout << "ERROR: Invalid maze file `" << file_name
                   << "`\nThere must be one start position `@` in a maze.\n";
-        // TODO: throw invalid_maze
-        return;
+        throw invalid_maze();
     }
     if (!destination_position_read)
     {
         std::cout << "ERROR: Invalid maze file `" << file_name
                   << "`\nThere must be one destination position `X` in a maze.\n";
-        // TODO: throw invalid_maze
-        return;
+        throw invalid_maze();
     }
 
     // // check if little rows before going on. Should be (row_size + 2) wide indexed from 1
     if (row < (row_size + 1))
     {
         std::cout << "ERROR: Incorrect maze size in file `" << file_name << "` at"
-                  << "\n\trow   : " << (row + 1) << "\n\tcolumn: " << (column + 1)
-                  << "\nExpected rows: " << (row_size + 2)
-                  << "\nGiven rows: " << (row + 1)
+                  << "\n\trow   : " << row << "\n\tcolumn: " << column
+                  << "\nExpected rows: " << (row_size + 1)
+                  << "\nGiven rows: " << row
                   << "\nMaze must be the rectangular size specified in the first row.\n";
-        // TODO: throw incorrect_maze_size(row,column)
-        return;
+        throw incorrect_maze_size();
     }
 
     std::cout << "Maze `" << file_name << "` has been successfully read!\n";
     input.close(); // Always have to close the file!
-}
-
-//// Member Functions ////
-
-std::string NPC_Racer::maze::stringify() const
-{
-    std::string print_accumulator;
-    // print maze as characters surrounded by spaces with newlines
-    for (size_t i = 0; i < row_size; i++)
-    {
-        for (size_t j = 0; j < column_size; j++)
-        {
-            print_accumulator = print_accumulator + character_maze[i * column_size + j];
-            print_accumulator += " ";
-        }
-        print_accumulator += "\n";
-    }
-    return print_accumulator;
-}
-
-void NPC_Racer::maze::print_maze() const
-{
-    std::cout << this;
 }
 
 //// External Overloaded Operators ////
