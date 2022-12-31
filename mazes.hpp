@@ -2,12 +2,13 @@
  * @file mazes.hpp
  * @author Brendan Fallon (fallonbr@mcmaster.ca) (https://github.com/bren007pie)
  * @brief This module contains the maze class and writes empty maze files.
- * @version 0.1
+ * @version 0.3
  * @date Sunday December 18, 2022
  * @copyright Copyright (c) 2022 Brendan Fallon
  */
 
 //// Preprocessor Directives ////
+#pragma once
 #include <iostream> // std::cout, std::ostream
 #include <fstream>  // std::ofstream, std::ifstream
 #include <string>   // std::string, std::to_string, std::stoull
@@ -39,10 +40,10 @@ namespace NPC_Racer // using namespace across multiple files: https://stackoverf
     //// Maze Class ////
     //// ---------- ////
     /**
-     * @brief Encapsulation for maze data.
+     * @brief Grid based maze with free spaces, barrier spaces, a starting point, and a destination point.
      *
      * @result Maze object that contains data read from a file.
-     * @cite Inspired by maze class from https://baraksh.com/CSE701/notes.php
+     * @cite Inspired by matrix class from https://baraksh.com/CSE701/notes.php
      */
     class maze
     {
@@ -234,7 +235,7 @@ namespace NPC_Racer // using namespace across multiple files: https://stackoverf
      * @return A reference of out for extraction chaining.
      * @warning This print out is just for display purposes, cannot be copied into a maze file.
      */
-    std::ostream &operator<<(std::ostream &out, const maze print_maze);
+    std::ostream &operator<<(std::ostream &out, const maze &print_maze);
 
 }
 
@@ -386,7 +387,11 @@ std::string NPC_Racer::maze::stringify() const
     return print_accumulator;
 }
 
-void NPC_Racer::maze::print_maze() const { std::cout << this; }
+void NPC_Racer::maze::print_maze() const
+{
+    std::cout << "Printing maze `" << file_name << "`\n";
+    std::cout << this->stringify();
+}
 
 bool NPC_Racer::maze::is_free(const int64_t row, const int64_t column, const bool out_of_bounds_warning) const
 {
@@ -623,7 +628,7 @@ void NPC_Racer::maze::parse_maze_file(const std::string trimmed_filename, const 
 
 //// External Overloaded Operators ////
 
-std::ostream &NPC_Racer::operator<<(std::ostream &out, const maze print_maze)
+std::ostream &NPC_Racer::operator<<(std::ostream &out, const maze &print_maze)
 {
     out << print_maze.stringify(); // put the string in the stream
     return out;

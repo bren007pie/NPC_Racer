@@ -69,6 +69,7 @@
         "bagels",
         "booger",
         "Brendan",
+        "Brute",
         "Carol",
         "cheese",
         "cinnamon",
@@ -105,6 +106,7 @@
         "measuring",
         "Modern",
         "pasting",
+        "pathfind",
         "polynomials",
         "populating",
         "practically",
@@ -125,5 +127,13 @@
         "unseeded",
         "uval",
         "worlds"
-    ]
+    ],
+    "cSpell.customDictionaries": {
+        "custom-dictionary-workspace": {
+            "name": "custom-dictionary-workspace",
+            "path": "${workspaceFolder:NPC-Racer}/.cspell/custom-dictionary-workspace.txt",
+            "addWords": true,
+            "scope": "workspace"
+        }
+    }
 }
