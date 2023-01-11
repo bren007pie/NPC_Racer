@@ -107,6 +107,21 @@ _deps
 #### MARKDOWN Ignores ####
 *.md.backup
 
+#### VSCode Ignores ####
+## VSCode settings
+.vscode/
+## Cspell spelling dictionary files
+.cspell/
+
+### Removing tracking for files
+## Step 1. Add the folder path to your repo's root .gitignore file.
+#    path_to_your_folder/
+## Step 2. Remove the folder from your local git tracking, but keep it on your disk.
+#    git rm -r --cached path_to_your_folder/
+## Step 3. Push your changes to your git repo.
+#    The folder will be considered "deleted" from Git's point of view (i.e. they are in past history, but not in the latest commit, and people pulling from this repo will get the files removed from their trees), but stay on your working directory because you've used --cached.
+## source: https://stackoverflow.com/questions/24290358/remove-a-folder-from-git-tracking
+
 
 #### Latex ignores ####
 # Note) Force a file past gitignore use -f, or --force
@@ -379,3 +394,5 @@ TSWLatexianTemp*
 
 # standalone packages
 *.sta
+
+
