@@ -6,7 +6,9 @@
             "request": "launch",
             //"program": "${fileDirname}\\${fileBasenameNoExtension}.exe", // the .exe file it's going to launch, named off of current open file in editor
             "program": "${workspaceFolder}\\NPCRacer.exe", // the .exe file it's going to launch, named off of current open file in editor
-            "args": [],
+            "args": [
+                "10_10_test_maze.csv"
+            ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],

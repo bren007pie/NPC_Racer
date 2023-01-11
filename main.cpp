@@ -8,13 +8,28 @@
  */
 
 //// Preprocessor Directives ////
-#include <iostream>  // std::cout
-#include "mazes.hpp" // NPC_Racer::maze, NPC_Racer::make_empty_maze_file
+#include <iostream>       // std::cout
+#include "mazes.hpp"      // NPC_Racer::maze, NPC_Racer::make_empty_maze_file
+#include "timekeeper.hpp" // NPC_Racer::timekeeper
 
-int main()
+/**
+ * @brief Runs the races of the mazes passed to the program as arguments.
+ */
+int main(int argc, char *argv[])
 {
-    NPC_Racer::maze test_maze_1("10_10_test_maze.txt"); // parsing first maze
-    std::cout << test_maze_1;                           // printing it out
-    NPC_Racer::maze test_maze_2("10_10_test_maze.csv"); // parsing second maze
-    std::cout << test_maze_2;                           // printing that one out
+    // for now the program can only run one race at a time.
+    if (argc != 2)
+    {
+        std::cout << "ERROR: 1 an only one input maze argument should be given.\n"
+                  << (argc - 1) << " arguments were given.\n";
+        exit(EXIT_FAILURE);
+    }
+
+    NPC_Racer::timekeeper timer;
+    timer.start();
+    NPC_Racer::maze race_maze(argv[1]); // parsing the maze based on the argument given.
+    std::cout << race_maze;             // printing it out
+    timer.end();
+
+    std::cout << timer.race_time();
 }
