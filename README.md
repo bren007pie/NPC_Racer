@@ -24,11 +24,12 @@ GitHub: [https://github.com/bren007pie](https://github.com/bren007pie)<br />
     - [Motivation](#motivation)
   - [Getting started](#getting-started)
     - [Compiling and running the Project](#compiling-and-running-the-project)
-    - [Mazes](#mazes)
+      - [Compiling Optimization](#compiling-optimization)
+  - [Mazes](#mazes)
   - [Making your own mazes](#making-your-own-mazes)
-  - [Using the project as a library](#using-the-project-as-a-library)
-  - [About the project](#about-the-project)
-    - [Acknowledgements](#acknowledgements)
+    - [Using the Parser to check your maze](#using-the-parser-to-check-your-maze)
+  - [Observations](#observations)
+  - [Acknowledgements](#acknowledgements)
 
 ## Introduction
 
@@ -73,6 +74,12 @@ Third, *ease of use*: the package is extensively documented, and programmers of 
 
 Fourthly, *organization*: the project is broken up into modules for each main class and is bundled entirely in its own namespace. And finally, *performance*: while not the main goal performance of core algorithms such as those in the maze class. This provides scalability should the user want to run on even bigger mazes.
 
+There are several things this library has not designed for. One *working with maze images*: as this would mean making my own image library or importing one, which would go against the *portability* principle.
+
+Secondly, *speed of execution*: there are much faster versions of all the pathfinding algorithms used. But for consistency, they've been modified to use arrays instead of faster abstract data types such as minimum-priority queues. The rest of the program should be fairly efficient except for the parser which was designed for error checking.
+
+Thirdly, *memory conservation*: While the project makes use of memory safe, by making use of C++ STL containers, the project has not been optimized for tracking how much memory is used. Most of the algorithms make array copies of the mazes but this has not been a problem within the testing of the example mazes. Even running the largest example maze the program did not use over 5 MB of memory according to the Windows 10 task manager.
+
 ## Getting started
 
 ### Compiling and running the Project
@@ -83,39 +90,13 @@ The project was made to be portable and all files should compile independently r
 g++ main.cpp -Wall -Wextra -Wconversion -Wsign-conversion -Wshadow -Wpedantic -std=c++20 -o NPCRacer.exe
 ```
 
-and it should compile without any errors. Assuming it compiled without errors you should now have the file `NPCRacer.exe` in your directory. To test running the project you can run with the two example mazes provided in the parent directory. Start with the [text maze](10_10_test_maze.txt):
-
-```PowerShell
-.\NPCRacer.exe 10_10_test_maze.txt
-```
-
-Expected output:
-
-TODO: Update expected outputs when the program is done
-
-```PowerShell
-Maze `10_10_test_maze.txt` has been successfully read!
-. . . . . . . . . .
-. . @ . . . . . . .
-. . . . . . . . . .
-. . . . . . . . . .
-. . . . . . . . . .
-. . . . . . . . . .
-. . . . . . . . . .
-. . . . . . . . = =
-. . . . . . . . . .
-. . . . . . . + . X
-```
-
-You can also try the [CSV maze](10_10_test_maze.csv):
+and it should compile without any errors. Assuming it compiled without errors you should now have the file `NPCRacer.exe` in your directory. To test run the project you can run with the small example maze example mazes provided in the sample_mazes directory. Start by copying the [10x10 test maze](sample_mazes/10_10_test_maze.txt) into the same directory as the executable. Then run the program with the input:
 
 ```PowerShell
 .\NPCRacer.exe 10_10_test_maze.csv
 ```
 
 Expected output:
-
-TODO: Update when the program is done
 
 ```PowerShell
 Maze `10_10_test_maze.csv` has been successfully read!
@@ -129,15 +110,130 @@ Maze `10_10_test_maze.csv` has been successfully read!
 = . . . . . @ . . =
 = . . . . . . . . =
 + = = = = = = = = +
+Running depth-first search pathfinding.
+Depth-first pathfinding complete, path was successfully found!
+Printing path on maze `10_10_test_maze.csv`
++ = = = = = = = = +
+= X P P P P P P P =
+= P P P P P P P P =
+= P P P P P P P P =
+= P P P P P P P P =
+= P P P P P P P P =
+= . . . . P P P P =
+= P P P P P @ P P =
+= P P P P P P P P =
++ = = = = = = = = +
+
+Running Dijkstra's algorithm pathfinding.
+Dijkstra's algorithm pathfinding complete, path was successfully found!
+Printing path on maze `10_10_test_maze.csv`
++ = = = = = = = = +
+= X P P P P P . . =
+= . . . . . P . . =
+= . . . . . P . . =
+= . . . . . P . . =
+= . . . . . P . . =
+= . . . . . P . . =
+= . . . . . @ . . =
+= . . . . . . . . =
++ = = = = = = = = +
+
+
+## RACE RESULTS ##.
+Maze Parsing time: 0.0009089
+
+# Depth-first pathfinding #
+Average depth-first pathfinding time: 2.69364e-05 seconds
+Depth-first pathfinding standard deviation: 1.1867e-05 seconds
+
+# Dijkstra's algorithm pathfinding #
+Average Dijkstra pathfinding time: 0.000146209 seconds
+Dijkstra pathfinding standard deviation: 4.35045e-05 seconds
+
+# Summary Table #
+Race on maze: '10_10_test_maze.csv'
+        | Depth-first   | Dijkstra's    | Algorithm
+--------|---------------|---------------|
+Winner  | WINNER        |               |
+Average | 2.69364e-05   | 0.000146209   |
+% diff. | 0      %      | 137.771711 %  |
+STDDEVP.| 1.1867e-05    | 4.35045e-05   |
+--------|---------------|---------------|
+Value
+^average and standard deviation time is in seconds
+
+Total program time: 0.0109164 seconds
 ```
 
-### Mazes
+You feel free to try any of the mazes in the sample mazes folder or make your own by seeing the [Making your own mazes](#making-your-own-mazes) section. If you don't want to copy the maze to the current working directory each time you can also run the program with an absolute path to the maze file. For Example on Windows 10 Powershell:
 
-TODO: Update for user input version of the program.
+```PowerShell
+.\NPCRacer.exe "C:\\Path\\to\\repository\\NPC-Racer\\sample_mazes\\10_10_test_maze.csv"
+```
 
-Mazes files are in the .txt or .csv format and must be located in the same directory as the executable. By default two are provided in the project directory called [10_10_test_maze.csv](10_10_test_maze.csv) and [10_10_test_maze.txt](10_10_test_maze.txt). Mazes come in a plain text format to easily read and edit small grids. The comma-separated value (CSV) format is for convenient editing in a GUI program such as Microsoft Excel. This makes editing large mazes easy by copying and pasting many elements.
+Powershell path strings need double \\ on Windows 10 and to be surrounded by "s.
 
-Several more mazes are provided in the sample_mazes folder. Parsing any of these starts by bringing the file into the same directory as the executable. For example, let's start by parsing the [10_10_small_maze.txt](sample_mazes\\10_10_small_maze.txt) file. To parse this file include the ["mazes.hpp"](mazes.hpp) file and call the `NPC_Racer::maze`class constructor with the file name, including the extension, as a string. All classes and functions in the project will be in the `NPC_Racer` namespace.
+Currently, the program only runs one race at a time on one maze.
+
+#### Compiling Optimization
+
+When working on small mazes it's best to not have the compiler optimize the executable. This is because for small mazes the timing is already very quick so going any faster may introduce floating point error. However, when working with large mazes such as the [301 x 201 maze](sample_mazes/301_201_delorie_generated_maze.csv) I found it takes a couple of minutes to run on my computer. If you find this to be the case I would suggest adding the -O2 optimization argument to the compiler. For example on Windows 10 Powershell:
+
+```PowerShell
+g++ main.cpp -Wall -Wextra -Wconversion -Wsign-conversion -Wshadow -Wpedantic -std=c++20 -O2 -o NPCRacer.exe
+```
+
+For me, this reduced the run time of the large maze by as much as 5 times! But you will also need to be careful to only compare races done with optimized or unoptimized code.
+
+## Mazes
+
+Mazes files are in the .txt or .csv format and must be located in the same directory as the executable. By default, there should be 10 mazes provided in the folder called `sample_mazes`. For example [10_10_test_maze.csv](sample_mazes/10_10_test_maze.csv) and [10_10_test_maze.txt](sample_mazes/10_10_test_maze.txt). Mazes come in a plain text format to easily read and edit small grids. The comma-separated value (CSV) format is for convenient editing in a GUI program such as Microsoft Excel. This makes editing large mazes easy by copying and pasting many elements.
+
+## Making your own mazes
+
+To make your own maze I would suggest starting with an empty maze and filling it in. The `NPC_Racer::make_empty_maze_file` function lets you make an n x m maze filled with free spaces in a space-separated or comma-separated format.
+
+```C++
+NPC_Racer::make_empty_maze_file(35, 34, true);
+```
+
+output:
+
+```bash
+Empty maze file `35_34_empty_maze.csv` was successfully created.
+```
+
+will make a 35-row-by-34-column CSV maze file called "35_34_empty_maze.csv" in the same folder as your executable. While
+
+```C++
+NPC_Racer::make_empty_maze_file(100, 100, false);
+```
+
+```bash
+Empty maze file `100_100_empty_maze.txt` was successfully created.
+```
+
+will make a 100 by 100 empty text maze file.
+
+From there you can edit each maze in your favourite CSV or text editor.
+
+The format of each maze is as follows:
+
+- Mazes' sizes must be at the top.
+  - For `.txt` files they are separated by a space with no whitespace after
+  - For `.csv` files they are separated by a comma and have an extra (columns – 2) ','s (Excel will save it this way)
+- Mazes elements are made up of single characters
+- Columns are separated by a space character ' ' (.txt files) or a comma character ',' (.csv files) and rows are separated by a newline character '\n'.
+- The final character before the end of the file is a newline character '\n'.
+- A period '.' denotes a free path space where agents can move.
+- An 'X' or 'x' character designates the destination position.
+- A '@' character designates the starting position.
+- A maze must contain one and only one destination position and source position.
+- Any other character is interpreted as a barrier space where the agent cannot move.
+
+### Using the Parser to check your maze
+
+It may also help to make sure your maze formatting is correct by parsing them. Parsing any of these starts by bringing the file into the same directory as the executable. For example, let's start by parsing the [10_10_small_maze.txt](sample_mazes/10_10_small_maze.txt) file. To parse this file include the ["mazes.hpp"](mazes.hpp) file and call the `NPC_Racer::maze`class constructor with the file name, including the extension, as a string. All classes and functions in the project will be in the `NPC_Racer` namespace.
 
 For example
 
@@ -198,53 +294,81 @@ Maze `10_10_small_maze.txt` has been successfully read!
 
 Congratulations, you've successfully parsed your first maze!
 
-## Making your own mazes
-
-To make your own maze I would suggest starting with an empty maze and filling it in. The `NPC_Racer::make_empty_maze_file` function lets you make an n x m maze filled with free spaces in a space-separated or comma-separated format.
-
-```C++
-NPC_Racer::make_empty_maze_file(35, 34, true);
-```
-
-output:
-
-```bash
-Empty maze file `35_34_empty_maze.csv` was successfully created.
-```
-
-will make a 35-row-by-34-column CSV maze file called "35_34_empty_maze.csv" in the same folder as your executable. While
-
-```C++
-NPC_Racer::make_empty_maze_file(100, 100, false);
-```
-
-```bash
-Empty maze file `100_100_empty_maze.txt` was successfully created.
-```
-
-will make a 100 by 100 empty text maze file.
-
-From there you can edit each maze in your favourite CSV or text editor.
-
-The format of each maze is as follows:
-
-- Mazes elements are made up of single characters
-- Columns are separated by a space character ' ' (.txt files) or a comma character ',' (.csv files) and rows are separated by a newline character '\n'.
-- The final character before the end of the file is a newline character '\n'.
-- A period '.' denotes a free path space where agents can move.
-- An 'X' or 'x' character designates the destination position.
-- A '@' character designates the starting position.
-- A maze must contain one and only one destination position and source position.
-- Any other character is interpreted as a barrier space where the agent cannot move.
-
 Feel free to go crazy. The project should accept mazes up to the limit of a signed 64-bit integer. Although making a maze that size may take some time and you will almost definitely run out of hard drive space unless you're Google.
 
-## Using the project as a library
+## Observations
 
-If you wish to extend the code, say with your own pathfinding algorithm, you are more than welcome to. No particular IDE is needed but I suggest an editor with a code spell checker, C++/Markdown linters, as well as rulers to make sure you don't go over 120 characters per line. Here is a brief overview of how the code is structured: #TODO Do or remove
+Based on simple testing some results are already clear. A single-pass depth-first search algorithm finds a path faster but the path is significantly longer. Meanwhile, Dijkstra's algorithm is slower but is guaranteed to make the shortest path possible. If the depth-first search had to search until it found the shortest maze it would take much longer I suspect.
 
-## About the project
+For Example:
+Depth-first path -
 
-### Acknowledgements
+```Powershell
++ = = = = = = = = +
+= X P P P P P P P =
+= P P P P P P P P =
+= P P P P P P P P =
+= P P P P P P P P =
+= P P P P P P P P =
+= . . . . P P P P =
+= P P P P P @ P P =
+= P P P P P P P P =
++ = = = = = = = = +
+```
+
+Dijkstra's algorithm path -
+
+```Powershell
++ = = = = = = = = +
+= X P P P P P . . =
+= . . . . . P . . =
+= . . . . . P . . =
+= . . . . . P . . =
+= . . . . . P . . =
+= . . . . . P . . =
+= . . . . . @ . . =
+= . . . . . . . . =
++ = = = = = = = = +
+```
+
+The depth-first path, denoted by `P`s goes all over the place where as Dijkstra's algorithm goes straight from the source to the destination.
+
+There is also a big difference between sparse empty spaces and perfect mazes. The perfect mazes are mazes that only have 1 valid path through them. An example of a sparse maze is the [100 x 100 sparse maze](sample_mazes/100_100_sparse_ascii_maze.csv) while an equivalent sized perfect maze is the [101 x 101 perfect maze](sample_mazes/101_101_dcode_generated_maze.csv).
+
+Example results for the sparse maze:
+
+```Powershell
+# Summary Table #
+Race on maze: '100_100_sparse_ascii_maze.csv'
+        | Depth-first   | Dijkstra's    | Algorithm
+--------|---------------|---------------|
+Winner  | WINNER        |               |
+Average | 0.00780169    | 2.10724       |
+% diff. | 0      %      | 198.524534 %  |
+STDDEVP.| 0.00358888    | 0.669563      |
+--------|---------------|---------------|
+Value
+^average and standard deviation time is in seconds
+```
+
+Example results for the perfect maze:
+
+```Powershell
+# Summary Table #
+Race on maze: '101_101_dcode_generated_maze.csv'
+        | Depth-first   | Dijkstra's    | Algorithm
+--------|---------------|---------------|
+Winner  | WINNER        |               |
+Average | 0.00146496    | 0.506315      |
+% diff. | 0      %      | 198.845986 %  |
+STDDEVP.| 0.000475519   | 0.00912798    |
+--------|---------------|---------------|
+Value
+^average and standard deviation time is in seconds
+```
+
+Comparing the runtime of these two mazes we can see that the perfect maze takes significantly less time because the search space is much smaller, i.e. has more barriers. The depth-first single-pass algorithm is also faster and finds the correct path because there is only one. In both cases, the single-pass depth search is 200% faster but only finds the shortest path on the perfect maze. This means that for open spaces, such as those NPCs would find in a video game, a shortest path algorithm like Dijkstra's algorithm would produce a more realistic result. But for a perfect maze solver, a single-pass depth solver would be better.
+
+## Acknowledgements
 
 A big thank you to Dr. Shoshany for his teaching on C++. Much of this project's style is based on teaching from that course. This documentation was forked off of the documentation on their [thread-pool library](https://github.com/bshoshany/thread-pool).

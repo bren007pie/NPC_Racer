@@ -2,7 +2,7 @@
  * @file mazes.hpp
  * @author Brendan Fallon (fallonbr@mcmaster.ca) (https://github.com/bren007pie)
  * @brief This module contains the maze class and writes empty maze files.
- * @version 0.3
+ * @version 1.0
  * @date Sunday December 18, 2022
  * @copyright Copyright (c) 2022 Brendan Fallon
  */
@@ -14,6 +14,7 @@
 #include <string>   // std::string, std::to_string, std::stoull
 #include <vector>   // std::vector
 #include <array>    // std::array
+#include <deque>    // std::deque
 
 ////// ========= //////
 ////// Interface //////
@@ -76,6 +77,16 @@ namespace NPC_Racer // using namespace across multiple files: https://stackoverf
         void print_maze() const;
 
         /**
+         * @brief Prints a given path on a maze as a 2D maze to the terminal.
+         *
+         * @param path A path that corresponds to this maze.
+         *
+         * @result Prints characters of the maze to the terminal with the path as a connected series of numbers.
+         * @warning Errors may occur if you attempt to print a path on a maze of the wrong size.
+         */
+        void print_path_on_maze(const std::deque<uint64_t> &path) const;
+
+        /**
          * @brief Says whether the maze element at that position is free or not.
          *
          * @param row The row position of the requested element. Indexed from 0 with the origin at the top left of the maze. So from top to bottom goes from 0 to (row size - 1)
@@ -87,8 +98,6 @@ namespace NPC_Racer // using namespace across multiple files: https://stackoverf
          * @warning If out_of_bounds_warning is set to false this will return false when a requested element is out of bounds. This could lead to unexpected behaviour.
          */
         bool is_free(const int64_t row, const int64_t column, const bool out_of_bounds_warning = true) const;
-
-        //// Internal Overloaded Operators ////
 
         //// Exceptions ////
 
@@ -164,6 +173,42 @@ namespace NPC_Racer // using namespace across multiple files: https://stackoverf
             out_of_bounds() : std::out_of_range("Attempting to access an elements out of the bounds of the maze."){};
         };
 
+        //// Public Data Members ////
+        // For use by pathfinding functions
+        /**
+         * @param start_position index of the start position in the flattened maze vector.
+         * @note Indexed from zero.
+         */
+        uint64_t start_position;
+
+        /**
+         * @param destination_position index of the destination position in the flattened maze vector.
+         * @note Indexed from zero.
+         */
+        uint64_t destination_position;
+
+        /**
+         * @param connected_paths The edges of the maze in flattened (1-dimensional) form. In each index of the inner array signifies one of the four movement directions. array[0] is up, array[1] is down, array[2] is left, and array[3] is right. At the movement direction we either store the index of the free space in that direction if it's connected. If not we store -1 to designate there is no connected path in that direction.
+         * @note This acts as the stored edges of the path graph.
+         */
+        std::vector<std::array<int64_t, 4>> connected_paths;
+
+        /**
+         * @param character_maze A vector storing the char elements of the maze in flattened (1-dimensional) form. Used for printing.
+         */
+        std::vector<char> character_maze;
+
+        /**
+         * @param bit_maze An intermediate bitmap representation of the maze in flattened (1-dimensional) form. True is a free space, false is a barrier.
+         * @note This essentially acts as the stored nodes of the path graph.
+         */
+        std::vector<bool> bit_maze;
+
+        /**
+         * @param file_name The file name of the maze with the extension.
+         */
+        std::string file_name;
+
     private:
         //// Private Member Functions ////
         /**
@@ -180,12 +225,6 @@ namespace NPC_Racer // using namespace across multiple files: https://stackoverf
         //// Data Members ////
 
         /**
-         * @param file_name The file name of the maze with the extension.
-         */
-        std::string file_name;
-
-        // The number of rows.
-        /**
          * @param row_size The number of rows of the rectangular maze.
          */
         size_t row_size = 0;
@@ -194,35 +233,6 @@ namespace NPC_Racer // using namespace across multiple files: https://stackoverf
          * @param column_size The number of columns of the rectangular maze.
          */
         size_t column_size = 0;
-
-        /**
-         * @param character_maze A vector storing the char elements of the maze in flattened (1-dimensional) form. Used for printing.
-         */
-        std::vector<char> character_maze;
-
-        /**
-         * @param bit_maze An intermediate bitmap representation of the maze in flattened (1-dimensional) form. True is a free space, false is a barrier.
-         * @note This essentially acts as the stored nodes of the path graph. Also, this intermediate representation is not intended for user access.
-         */
-        std::vector<bool> bit_maze;
-
-        /**
-         * @param start_position index of the start position in the flattened maze vector.
-         * @note Indexed from zero.
-         */
-        uint64_t start_position;
-
-        /**
-         * @param destination_position index of the destination position in the flattened maze vector.
-         * @note Indexed from zero.
-         */
-        uint64_t destination_position;
-
-        /**
-         * @param connected_paths An intermediate representation for the connected paths of each free space in the maze in flattened (1-dimensional) form. In each index of the inner array signifies one of the four movement directions. array[0] is up, array[1] is down, array[2] is left, and array[3] is right. At the movement direction we either store the index of the free space in that direction if it's connected. If not we store -1 to designate there is no connected path in that direction.
-         * @note This acts as the stored edges of the path graph. Also, this intermediate representation is not intended for user access.
-         */
-        std::vector<std::array<int64_t, 4>> connected_paths;
     };
 
     //// External Overloaded Operators ////
@@ -236,6 +246,8 @@ namespace NPC_Racer // using namespace across multiple files: https://stackoverf
      * @warning This print out is just for display purposes, cannot be copied into a maze file.
      */
     std::ostream &operator<<(std::ostream &out, const maze &print_maze);
+
+#include <deque> // std::deque
 
 }
 
@@ -391,6 +403,47 @@ void NPC_Racer::maze::print_maze() const
 {
     std::cout << "Printing maze `" << file_name << "`\n";
     std::cout << this->stringify();
+}
+
+void NPC_Racer::maze::print_path_on_maze(const std::deque<uint64_t> &path) const
+{
+    // variables
+    std::vector<char> character_path_maze = character_maze; // version of the maze with the path on it
+    char path_char = 'P';                                   // default path character
+
+    // looping through the path and adding it to the character version
+    for (size_t i = 0; i < path.size(); i++)
+    {
+        // using ASCII table letters to display but has a limit of 57 characters before we run out of upper/lowercase
+        if (path.size() <= 60)
+            path_char = 'A' + (char)i; // based on https://stackoverflow.com/questions/4629050/convert-an-int-to-ascii-character
+
+        character_path_maze[path[i]] = path_char; // adds the position number of the path point to the character_path_maze
+    }
+
+    // if path large adding back start and end characters to make it more readable
+    if (path.size() > 61)
+    {
+        character_path_maze[start_position] = '@';
+        character_path_maze[destination_position] = 'X';
+    }
+
+    std::cout << "Printing path on maze `" << file_name << "`\n";
+
+    // printing out the path on the maze
+    std::string print_accumulator;
+    // print maze as characters surrounded by spaces with newlines
+    for (size_t i = 0; i < row_size; i++)
+    {
+        for (size_t j = 0; j < column_size; j++)
+        {
+            print_accumulator = print_accumulator + character_path_maze[i * column_size + j];
+            print_accumulator += " ";
+        }
+        print_accumulator += "\n";
+    }
+
+    std::cout << print_accumulator << "\n";
 }
 
 bool NPC_Racer::maze::is_free(const int64_t row, const int64_t column, const bool out_of_bounds_warning) const

@@ -1,18 +1,74 @@
 /**
  * @file timekeeper.hpp
  * @author Brendan Fallon (fallonbr@mcmaster.ca) (https://github.com/bren007pie)
- * @brief This module contains chrono based class for timing and doing NPC race statistics.
- * @version 0.4
+ * @brief This module contains chrono based class for timing and NPC race statistics functions.
+ * @version 1.0
  * @date January 10, 2022
  * @copyright Copyright (c) 2022 Brendan Fallon
  */
 
 //// Preprocessor Directives ////
-#include <chrono> // std::chrono::steady_clock, std::chrono::time_point, std::chrono::duration
+#pragma once
+#include <chrono>  // std::chrono::steady_clock, std::chrono::time_point, std::chrono::duration
+#include <vector>  // std::vector
+#include <numeric> // std::accumulate
+#include <cmath>
 
 namespace NPC_Racer
 {
-    // originally adapted  from
+    //// --------- ////
+    //// Functions ////
+    //// --------- ////
+    /**
+     * @brief Takes the average of a series of pathfinding trial times.
+     *
+     * @param trial_times A collection of all the run times from each trial.
+     *
+     * @return Returns the population mean or average.
+     */
+    double run_average(const std::vector<double> &trial_times)
+    {
+        return (std::accumulate(trial_times.begin(), trial_times.end(), 0.0) / (double)trial_times.size());
+    }
+
+    /**
+     * @brief Takes the population standard deviation of a series of pathfinding trial times.
+     *
+     * @param trial_times A collection of all the run times from each trial.
+     *
+     * @return Returns the population standard deviation of the series of trials.
+     */
+    double run_standard_deviation(const std::vector<double> &trial_times)
+    {
+        // inspired by: https://www.programiz.com/cpp-programming/examples/standard-deviation
+        // recalculating the mean to avoid user error of having to re-input
+        const double mean = std::accumulate(trial_times.begin(), trial_times.end(), 0.0) / (double)trial_times.size();
+        double standard_deviation = 0.0;
+
+        for (size_t i = 0; i < trial_times.size(); i++)
+        {
+            standard_deviation += std::pow(trial_times[i] - mean, 2); // taking the some of the squares
+        }
+
+        return std::sqrt(standard_deviation / (double)trial_times.size());
+    }
+
+    /**
+     * @brief Takes the percentage difference between run averages.
+     *
+     * @param bigger The longer of the two trials.
+     * @param smaller The shorter of the two trials.
+     *
+     * @return Returns the percentage difference as a percentage (i.e. decimal x 100).
+     * @note Percentage difference definition: https://www.calculatorsoup.com/calculators/algebra/percent-difference-calculator.php
+     */
+    double run_percentage_difference(const double &bigger, const double &smaller)
+    {
+        double mean = (bigger + smaller) / 2;
+        double percentage_difference = std::abs(bigger - smaller) / mean; // abs just in case user passed wrong input
+        return (percentage_difference * 100);
+    }
+
     //// ----------------------- ////
     //// Timekeeper Class ////
     //// ----------------------- ////
