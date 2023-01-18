@@ -132,10 +132,14 @@ int main(int argc, char *argv[])
     std::cout << "\n# Depth-first pathfinding #\n";
     std::cout << "Average depth-first pathfinding time: " << depth_first_average << " seconds\n";
     std::cout << "Depth-first pathfinding standard deviation: " << depth_first_standard_deviation << " seconds\n";
+    std::cout << "Size of the depth-first path found: " << depth_first_racer.path.size() << "\n";
+    std::cout << "Number of depth-first nodes explored: " << depth_first_racer.nodes_explored << "\n";
 
     std::cout << "\n# Dijkstra's algorithm pathfinding #\n";
     std::cout << "Average Dijkstra pathfinding time: " << dijkstra_average << " seconds\n";
     std::cout << "Dijkstra pathfinding standard deviation: " << dijkstra_standard_deviation << " seconds\n";
+    std::cout << "Size of the Dijkstra path found: " << dijkstra_racer.path.size() << "\n";
+    std::cout << "Number of Dijkstra nodes explored: " << dijkstra_racer.nodes_explored << "\n";
 
     std::cout << "\n# Summary Table #\n";
     std::cout << "Race on maze: '" << race_maze.file_name << "'\n";
@@ -145,6 +149,8 @@ int main(int argc, char *argv[])
     std::cout << "Average\t| " << depth_first_average << "\t| " << dijkstra_average << "\t| \n";
     std::cout << "% diff.\t| " << (depth_first_percentage_difference == 0 ? "0\t" : std::to_string(depth_first_percentage_difference)) << " %\t| " << (dijkstra_percentage_difference == 0 ? "0\t" : std::to_string(dijkstra_percentage_difference)) << " %\t| \n";
     std::cout << "STDDEVP.| " << depth_first_standard_deviation << "\t| " << dijkstra_standard_deviation << "\t| \n";
+    std::cout << "Path\t| " << depth_first_racer.path.size() << "\t\t| " << dijkstra_racer.path.size() << "\t\t| \n";
+    std::cout << "Explored| " << depth_first_racer.nodes_explored << "\t\t| " << dijkstra_racer.nodes_explored << "\t\t| \n";
     std::cout << "--------|---------------|---------------|\n";
     std::cout << "Value\n";
     std::cout << "^average and standard deviation time is in seconds\n";

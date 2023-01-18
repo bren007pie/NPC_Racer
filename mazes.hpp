@@ -410,13 +410,15 @@ void NPC_Racer::maze::print_path_on_maze(const std::deque<uint64_t> &path) const
     // variables
     std::vector<char> character_path_maze = character_maze; // version of the maze with the path on it
     char path_char = 'P';                                   // default path character
+    // Path displays can only be single characters but we can still use [0-9][A-Z][a-z] if the path is 62 long or shorter
+    std::string short_path_characters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
     // looping through the path and adding it to the character version
     for (size_t i = 0; i < path.size(); i++)
     {
         // using ASCII table letters to display but has a limit of 57 characters before we run out of upper/lowercase
-        if (path.size() <= 60)
-            path_char = 'A' + (char)i; // based on https://stackoverflow.com/questions/4629050/convert-an-int-to-ascii-character
+        if (path.size() <= 62)
+            path_char = short_path_characters[i]; // based on https://stackoverflow.com/questions/4629050/convert-an-int-to-ascii-character
 
         character_path_maze[path[i]] = path_char; // adds the position number of the path point to the character_path_maze
     }

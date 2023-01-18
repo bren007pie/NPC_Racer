@@ -149,6 +149,11 @@ std::deque<uint64_t> &NPC_Racer::depth_first_agent::pathfind(const NPC_Racer::ma
     int64_t previous_position;                                         // index of the previous position to back-track and record the path
     size_t number_directions = race_maze.connected_paths.at(0).size(); // number of neighbors, for 4-way grid should be 4
 
+    // Resetting class variables for new pathfinding loop, if forget to do this they accumulate between runs
+    path = {};
+    nodes_explored = 0;
+    pathfinding_completed = false;
+
     // initializing variables
     previous_nodes.resize(race_maze.character_maze.size(), -1);   // all -1 initially because none visited
     visited_nodes.resize(race_maze.character_maze.size(), false); // all false initially
@@ -223,6 +228,11 @@ std::deque<uint64_t> &NPC_Racer::dijkstra_agent::pathfind(const NPC_Racer::maze 
     uint64_t max_uint64_minus_one = max_uint64 - 1;                    // max size uint64_t, infinite distance in the queue
     size_t queue_counter;                                              // tracks non-infinite elements in queue, if is 0 it's empty
     uint64_t distance_through_current;                                 // the distance of next_position through current one
+
+    // Resetting class variables for new pathfinding loop
+    path = {};
+    nodes_explored = 0;
+    pathfinding_completed = false;
 
     // initializing variables
     // initially all distances, besides start node, start at infinity (max int)
